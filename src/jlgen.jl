@@ -213,7 +213,7 @@ function compile_method_instance(@nospecialize(job::CompilerJob), method_instanc
     # generate IR
     native_code = ccall(:jl_create_native, Ptr{Cvoid},
                         (Vector{MethodInstance}, Base.CodegenParams, Cint),
-                        [method_instance], params, #=extern policy=# 1)
+                        [method_instance], params, extern_policy(job) ? 2 : 1)
     @assert native_code != C_NULL
     llvm_mod_ref = ccall(:jl_get_llvm_module, LLVM.API.LLVMModuleRef,
                          (Ptr{Cvoid},), native_code)

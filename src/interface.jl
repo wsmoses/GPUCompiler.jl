@@ -158,3 +158,6 @@ link_libraries!(::CompilerJob, mod::LLVM.Module, undefined_fns::Vector{String}) 
 
 # whether pointer is a valid call target
 valid_function_pointer(::CompilerJob, ptr::Ptr{Cvoid}) = false
+
+# whether we should compile in imaging mode
+extern_policy(::CompilerJob) = false
