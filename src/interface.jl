@@ -64,13 +64,12 @@ struct FunctionSpec{F,TT}
     tt::DataType
     kernel::Bool
     name::Union{Nothing,String}
-    world_age::UInt
 end
 
 # put the function and argument types in typevars
 # so that we can access it from generated functions
-FunctionSpec(f, tt=Tuple{}, kernel=true, name=nothing, world_age=Base.get_world_counter()) =
-    FunctionSpec{typeof(f),tt}(f, tt, kernel, name, world_age)
+FunctionSpec(f, tt=Tuple{}, kernel=true, name=nothing) =
+    FunctionSpec{typeof(f),tt}(f, tt, kernel, name)
 
 function signature(spec::FunctionSpec)
     fn = something(spec.name, nameof(spec.f))
