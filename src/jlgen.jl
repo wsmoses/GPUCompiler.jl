@@ -309,6 +309,8 @@ end
 
 ## interface
 
+cache_gbl = nothing
+
 function compile_method_instance(@nospecialize(job::CompilerJob),
                                  method_instance::MethodInstance)
     # populate the cache
@@ -321,7 +323,13 @@ function compile_method_instance(@nospecialize(job::CompilerJob),
 
     # set-up the compiler interface
     debug_info_kind = llvm_debug_info(job)
-    lookup_fun = (mi, min_world, max_world) -> ci_cache_lookup(cache, mi, min_world, max_world)
+    lookup_fun = if Sys.ARCH == :x86 || Sys.ARCH == :x86_64
+        (mi, min_world, max_world) -> ci_cache_lookup(cache, mi, min_world, max_world)
+    else
+        global cache_gbl
+        cache_gbl = cache
+        (mi, min_world, max_world) -> ci_cache_lookup(cache_gbl, mi, min_world, max_world)
+    end
     lookup_cb = @cfunction($lookup_fun, Any, (Any, UInt, UInt))
     params = Base.CodegenParams(;
         track_allocations  = false,
@@ -341,6 +349,9 @@ function compile_method_instance(@nospecialize(job::CompilerJob),
                             (Ptr{Cvoid},), native_code)
         @assert llvm_mod_ref != C_NULL
         llvm_mod = LLVM.Module(llvm_mod_ref)
+    end
+    if !(Sys.ARCH == :x86 || Sys.ARCH == :x86_64)
+        cache_gbl = nothing
     end
 
     # get the top-level code
