@@ -45,8 +45,11 @@ llvm_triple(target::PTXCompilerTarget) = Int===Int64 ? "nvptx64-nvidia-cuda" : "
 
 function llvm_machine(target::PTXCompilerTarget)
     triple = llvm_triple(target)
-    t = Target(triple=triple)
-
+    t = @static if !Sys.isapple()
+        Target(triple=triple)
+    else
+        Target()
+    end
     tm = TargetMachine(t, triple, "sm_$(target.cap.major)$(target.cap.minor)",
                        "+ptx$(target.ptx.major)$(target.ptx.minor)")
     asm_verbosity!(tm, true)
